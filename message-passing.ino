@@ -6,7 +6,8 @@
  - the "7" is inconsequential and will be dropped
  *
  * It should also be noted this is a sequential example. This is intentional due
- * to power constraints of the project (driving multiple steppers)
+ * to power constraints of the project (driving multiple steppers at the same
+ * time is too much, so we're moving one at a time)
  */
 
 #include <SoftwareSerial.h>
