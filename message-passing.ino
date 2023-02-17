@@ -9,14 +9,22 @@
  * to power constraints of the project (driving multiple steppers)
  */
 
-int pinOut = 0;
-int pinIn = 0;
+#include <SoftwareSerial.h>
+
+#define pinOut 0
+#define pinIn 1
+
+SoftwareSerial pinSerial = SoftwareSerial(pinIn, pinOut);
 
 void setup() {
   while (!Serial) { }
   Serial.begin(19200);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
+
+  pinMode(pinIn, INPUT);
+  pinMode(pinOut, OUTPUT);
+  pinSerial.begin(9600);
 }
 
 void blinkFor(long sec) {
@@ -40,9 +48,27 @@ void handleMessage(char first_character) {
 void passMessage(String message) {
   if (message.length() == 0) return;
   // something here...
+  pinSerial.write("hello");
 }
 
-void loop() {
+void handleSerial(char first_character, String other_characters) {
+  handleMessage(first_character);
+  passMessage(other_characters);
+}
+
+void checkPinSerial() {
+  if (pinSerial.available() == 0) return;
+
+  char first_character = pinSerial.read();
+  String other_characters = "";
+  while (pinSerial.available() != 0) {
+    other_characters += pinSerial.read();
+  }
+
+  handleSerial(first_character, other_characters);
+}
+
+void checkUsbSerial() {
   if (Serial.available() == 0) return;
 
   char first_character = Serial.read();
@@ -51,6 +77,10 @@ void loop() {
     other_characters += Serial.read();
   }
 
-  handleMessage(first_character);
-  passMessage(other_characters);
+  handleSerial(first_character, other_characters);
+}
+
+void loop() {
+  checkUsbSerial();
+  checkPinSerial();
 }
